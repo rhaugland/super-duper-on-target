@@ -27,7 +27,7 @@ Display:
 > This skill keeps you and Claude focused on what the client actually asked for.
 >
 > **How it works:**
-> 1. You paste the client's exact ask. We distill 3-5 concrete objectives.
+> 1. You paste the client's exact ask. We distill 3-5 concrete objectives and capture what the client expects to experience.
 > 2. Every new idea gets checked: Did the client ask for it? Does it serve an objective? Can we skip it?
 > 3. Off-target ideas get parked for a Phase 2 conversation — not lost, just deferred.
 > 4. Over time, the skill learns your personal drift patterns and warns you earlier.
@@ -59,6 +59,11 @@ Detection uses the drift log file. Pattern details for display are pulled from t
 2. **Identify session driver.** Who's building? Record name for drift profile tracking.
 3. **Distill 3-5 numbered concrete objectives** from the raw ask. Only what the client asked for. Nothing implied, nothing "obvious."
 4. **Save to `docs/objectives.md`** using template below.
+4b. **Distill client expectations.** Extract 2-5 plain-language statements about what the client expects to *experience* — not what to build (that's objectives), but what it should feel like to use.
+    - **Simple projects** (1-2 flows): short-form statements. E.g., "Upload a photo, see result — no account needed."
+    - **Complex projects** (3+ flows): scenario format for critical paths. E.g., "Agent opens link → picks slot → confirms → gets email."
+    - **Insufficient signal**: if the raw ask lacks experience clues, state assumptions and mark as `*(inferred)*`. Human confirms before lock-in.
+    - Save to `docs/objectives.md` under `## Client Expectations`, directly below Distilled Objectives.
 5. **Read driver's drift profile** from memory (e.g., `feedback_drift_patterns_{name}.md`). Give preemptive warnings based on known patterns.
 
 ## Phase 2: Active Drift Detection
@@ -97,6 +102,48 @@ On each new task or subtask, silently classify: **on-track** or **drift detected
 
 If driver has known drift patterns (from memory), flag likely drift triggers before they occur. One short warning, not a lecture.
 
+## Client Walkthrough
+
+Pre-delivery checkpoint. Triggered when the human explicitly requests delivery review or says they're ready to deliver. Not triggered automatically.
+
+**Sequencing:** Walkthrough runs first (checks the build). Phase 3 retrospective runs after (checks the process).
+
+### How It Works
+
+Claude role-plays as the client (grounded in the raw ask — who they are, what they asked for, their context) and checks each captured expectation from `docs/objectives.md`.
+
+### Output Format — Full (3+ expectations, scenario format)
+
+```markdown
+## Client Walkthrough
+
+**Role:** [Client description from raw ask]
+
+### Expectation Check
+| # | Expectation | Met? | Severity | Notes |
+|---|------------|------|----------|-------|
+| 1 | [expectation] | ✅/⚠️/❌ | —/Minor/Major/Critical | [details] |
+
+### Client Reaction
+> [Synthesized reaction in character as the client]
+
+### Gaps Found
+- [Gap] (flag to human for decision)
+```
+
+### Output Format — Inline (1-2 expectations, short form)
+
+> Expectations met: ✅ ✅ ⚠️ (mobile layout needs responsive pass — flagging for your call)
+
+### Rules
+
+- **One check, not a loop.** Runs once before delivery.
+- **Flag, don't block.** Mismatches are surfaced — don't add scope to fix them. That would be drift. If any expectation is ❌ Critical, call it out as a delivery risk.
+- **Severity:** `—` (met), `Minor` (cosmetic), `Major` (functional gap), `Critical` (fully unmet).
+- **Stay in character.** Client reaction is role-play, not a real quote. Include only for full format.
+- **Scale format to project.** Short-form expectations → inline output. Scenario expectations → full table.
+- **Weigh stated over inferred.** Expectations marked *(inferred)* are lower-confidence — a miss on a stated expectation is more significant than a miss on an inferred one.
+
 ## Phase 3: Drift Pattern Learning
 
 ### What to Track
@@ -119,7 +166,7 @@ Prompt at session end:
 
 ### Objective Amendment Flow
 
-When new client input arrives: capture verbatim, update `docs/objectives.md` changelog, re-distill objectives, reset filter against new list.
+When new client input arrives: capture verbatim, update `docs/objectives.md` changelog, re-distill objectives, review and update `## Client Expectations` if the amendment changes the expected experience, reset filter against new list.
 
 ## User Override
 
@@ -163,6 +210,11 @@ Drift signal phrases — run the filter immediately when you hear:
 1. [Objective]
 2. [Objective]
 3. [Objective]
+
+## Client Expectations
+- [What the client expects to experience]
+- [Implicit constraints — e.g., "no login needed"]
+- [Quality expectations — e.g., "fast, mobile-friendly"]
 
 ## Changelog
 | Date | Change | Source |
