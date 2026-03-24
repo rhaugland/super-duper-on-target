@@ -687,10 +687,118 @@ Add a new section under Engineering Standards in `/Users/ryanhaugland/CLAUDE.md`
 Use the `stay-on-target` skill when starting any client project, beginning implementation, or when scope creep is suspected. Every build should start with objective lock-in — capture the client's raw ask, distill 3-5 objectives, and evaluate all additions against the three-question filter.
 ```
 
-- [ ] **Step 2: Commit CLAUDE.md update**
+- [ ] **Step 2: Verify CLAUDE.md update**
+
+Confirm the new section appears under Engineering Standards and doesn't conflict with existing entries.
+
+---
+
+### Task 8: Package Skill for Sharing
+
+Add the skill file and an install script to the GitHub repo so your business partner can set up `/stay-on-target` on his machine.
+
+**Files:**
+- Create: `~/projects/super-duper-on-target/skills/stay-on-target/SKILL.md`
+- Create: `~/projects/super-duper-on-target/install.sh`
+- Create: `~/projects/super-duper-on-target/README.md`
+
+- [ ] **Step 1: Copy the tested SKILL.md into the repo**
 
 ```bash
-cd /Users/ryanhaugland
-git add CLAUDE.md
-git commit -m "docs: add stay-on-target to engineering standards in CLAUDE.md"
+mkdir -p ~/projects/super-duper-on-target/skills/stay-on-target
+cp ~/.claude/skills/stay-on-target/SKILL.md ~/projects/super-duper-on-target/skills/stay-on-target/SKILL.md
 ```
+
+- [ ] **Step 2: Write the install script**
+
+Create `~/projects/super-duper-on-target/install.sh`:
+
+```bash
+#!/bin/bash
+set -e
+
+SKILL_NAME="stay-on-target"
+SKILL_DIR="$HOME/.claude/skills/$SKILL_NAME"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SOURCE_DIR="$SCRIPT_DIR/skills/$SKILL_NAME"
+
+if [ ! -f "$SOURCE_DIR/SKILL.md" ]; then
+  echo "Error: SKILL.md not found in $SOURCE_DIR"
+  exit 1
+fi
+
+mkdir -p "$SKILL_DIR"
+cp "$SOURCE_DIR/SKILL.md" "$SKILL_DIR/SKILL.md"
+
+echo "Installed $SKILL_NAME to $SKILL_DIR"
+echo ""
+echo "You can now use /stay-on-target in Claude Code."
+echo ""
+echo "On first use, the skill will ask who's driving the session"
+echo "and create a drift profile for you over time."
+```
+
+- [ ] **Step 3: Make install script executable**
+
+```bash
+chmod +x ~/projects/super-duper-on-target/install.sh
+```
+
+- [ ] **Step 4: Write a README**
+
+Create `~/projects/super-duper-on-target/README.md`:
+
+```markdown
+# stay-on-target
+
+A Claude Code skill that keeps you focused on client objectives and prevents scope creep.
+
+## What it does
+
+- **Locks in objectives** — captures the client's raw ask and distills 3-5 concrete deliverables
+- **Detects scope drift** — runs a three-question filter on every new work proposal
+- **Parks ideas** — off-scope ideas go to a parking lot for Phase 2 conversations
+- **Learns your patterns** — builds a personal drift profile that gets sharper over time
+- **Multi-user** — each team member gets their own drift profile
+
+## Install
+
+```bash
+git clone https://github.com/rhaugland/super-duper-on-target.git
+cd super-duper-on-target
+./install.sh
+```
+
+## Usage
+
+In Claude Code, type `/stay-on-target` at the start of any client project.
+
+The skill will:
+1. Ask you to paste the client's raw ask
+2. Help you distill 3-5 objectives
+3. Warn you about your known drift tendencies
+4. Watch for scope creep during the entire build
+5. Park off-scope ideas for Phase 2
+
+## Docs
+
+- [Design Spec](docs/superpowers/specs/2026-03-24-stay-on-target-design.md)
+- [Implementation Plan](docs/superpowers/plans/2026-03-24-stay-on-target.md)
+```
+
+- [ ] **Step 5: Commit and push to GitHub**
+
+```bash
+cd ~/projects/super-duper-on-target
+git add skills/ install.sh README.md
+git commit -m "feat: add skill file, install script, and README for sharing"
+git push -u origin main
+```
+
+- [ ] **Step 6: Verify partner can install**
+
+Share with partner:
+1. Add them as collaborator on `https://github.com/rhaugland/super-duper-on-target`
+2. They run: `git clone https://github.com/rhaugland/super-duper-on-target.git && cd super-duper-on-target && ./install.sh`
+3. They now have `/stay-on-target` in their Claude Code
+4. Their drift profile starts blank and learns from their sessions
