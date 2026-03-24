@@ -27,7 +27,7 @@ Display:
 > This skill keeps you and Claude focused on what the client actually asked for.
 >
 > **How it works:**
-> 1. You paste the client's exact ask. We distill 3-5 concrete objectives and capture what the client expects to experience.
+> 1. You paste the client's exact ask. We distill objectives, capture what the client expects to experience, and set a quality tier.
 > 2. Every new idea gets checked: Did the client ask for it? Does it serve an objective? Can we skip it?
 > 3. Off-target ideas get parked for a Phase 2 conversation — not lost, just deferred.
 > 4. Over time, the skill learns your personal drift patterns and warns you earlier.
@@ -41,6 +41,7 @@ Display:
 > ── Stay on Target ─────────────────────
 > Filter: (1) Client ask? (2) Serves objective? (3) Skip OK?
 > No/No/Yes → Park it. Gray area → Ask yes/no.
+> Tier: {tier} — "{reference}"
 >
 > Your patterns:
 >   ⚠ {pattern 1} ({frequency}) — triggers during {context}
@@ -64,6 +65,14 @@ Detection uses the drift log file. Pattern details for display are pulled from t
     - **Complex projects** (3+ flows): scenario format for critical paths. E.g., "Agent opens link → picks slot → confirms → gets email."
     - **Insufficient signal**: if the raw ask lacks experience clues, state assumptions and mark as `*(inferred)*`. Human confirms before lock-in.
     - Save to `docs/objectives.md` under `## Client Expectations`, directly below Distilled Objectives.
+4c. **Set quality tier.** Ask: "Quality tier for this project — Craft, Functional, or Prototype? Optional: add a reference for what 'good' looks like."
+    - **Craft** — Design matters. Iterate on look and feel. "Is this good?" before moving on.
+    - **Functional** — Solid and clean. Good defaults, no rough edges. Don't obsess, don't cut corners.
+    - **Prototype** — Speed is the point. Get it working. Polish is deferred.
+    - Default to **Functional** if the builder declines to choose.
+    - Optional reference: "Craft — think Linear" or "Prototype — demo for Thursday."
+    - Save to `docs/objectives.md` under `## Quality Tier`.
+    - If returning to a project where `docs/objectives.md` exists but has no `## Quality Tier`, prompt for the tier before proceeding. Default to Functional if declined.
 5. **Read driver's drift profile** from memory (e.g., `feedback_drift_patterns_{name}.md`). Give preemptive warnings based on known patterns.
 
 ## Phase 2: Active Drift Detection
@@ -97,6 +106,31 @@ Driver names are always lowercased. If the file doesn't exist, create it. Catego
 ### Task Boundary Check
 
 On each new task or subtask, silently classify: **on-track** or **drift detected**. If drift detected, run the filter aloud before proceeding.
+
+### Quality Check
+
+Rushing signal phrases — intervene based on the project's quality tier when you hear:
+
+- "Just make it work"
+- "Good enough"
+- "We can polish later"
+- "The client won't notice"
+- "Let's just ship it"
+- "I don't want to overthink this"
+- "It's fine, let's move on" / "It's fine for now"
+- "We're running out of time"
+
+Evaluate in context — "it's fine" as genuine acceptance is not a rushing signal.
+
+| Tier | Response |
+|------|----------|
+| Craft | **Stop.** "You committed to craft. Before moving on: is this something you'd be proud to show?" |
+| Functional | **Nudge.** "Quick check — is this clean and consistent, or are you cutting a corner?" |
+| Prototype | **Silent.** Speed is the commitment. Don't intervene on quality. |
+
+One intervention per signal. If the builder says "I know, move on" — respect it. This is a mirror, not a gate. Rushing signals are not drift events — do not log them to the drift log or dashboard.
+
+To change tier mid-project: update `docs/objectives.md`, log in Changelog, confirm aloud. No further ceremony.
 
 ### Preemptive Anticipation
 
@@ -215,6 +249,10 @@ Drift signal phrases — run the filter immediately when you hear:
 - [What the client expects to experience]
 - [Implicit constraints — e.g., "no login needed"]
 - [Quality expectations — e.g., "fast, mobile-friendly"]
+
+## Quality Tier
+**Tier:** Craft | Functional | Prototype
+**Reference:** (optional)
 
 ## Changelog
 | Date | Change | Source |
